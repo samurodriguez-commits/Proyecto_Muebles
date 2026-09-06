@@ -4,17 +4,16 @@ function injectarHeader() {
             <img src="https://static.vecteezy.com/system/resources/previews/021/011/502/original/minimalist-furniture-logo-design-template-vector.jpg" alt="Logo tienda de muebles" class="logo-header">
             <h1 class="no-select">Tienda de muebles</h1>
         </section>
-        <section>
-            <a href="/index.html">Inicio</a>
-            <a href="/contacto.html">Contacto</a>
-            <a href="/catalogo.html">Catalogo</a>
-            <a href="/tutoriales.html">Tutoriales</a>
-            <a href="/registro.html">Registrarse</a>
-            <a href="/InicioSesion.html">Iniciar sesion</a>
-        </section>
-        <section>
-            <a href="/carrito.html">Carrito &#x1F6D2;</a>
-        </section>
+
+        <nav>
+            <a href="index.html">Inicio</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="catalogo.html">Catalogo</a>
+            <a href="tutoriales.html">Tutoriales</a>
+            <a href="registro.html">Registrarse</a>
+            <a href="InicioSesion.html">Iniciar sesion</a>
+            <a href="carrito.html">Carrito 🛒</a>
+        </nav>
     `;
 }
 
@@ -24,9 +23,9 @@ function injectarFooter() {
         footer.innerHTML = `
             <p>&copy; 2026 Tienda de Muebles</p>
             <p>
-                <a href="/contacto.html">Contacto</a> |
-                <a href="/catalogo.html">Catálogo</a> |
-                <a href="/tutoriales.html">Tutoriales</a>
+                <a href="contacto.html">Contacto</a> |
+                <a href="catalogo.html">Catálogo</a> |
+                <a href="tutoriales.html">Tutoriales</a>
             </p>
         `;
     }
@@ -35,7 +34,7 @@ function injectarFooter() {
 injectarHeader();
 injectarFooter();
 
-// ---------- VALIDACIONES (basadas en los ejemplos) ----------
+/* ============ VALIDACIONES (patron de los ejemplos) ============ */
 
 function validarString(text, min, max) {
     if (typeof text !== "string") {
@@ -97,7 +96,7 @@ function limpiarError(idError) {
     }
 }
 
-// ---------- FORMULARIO DE REGISTRO ----------
+/* ============ FORMULARIO DE REGISTRO (usa LocalStorage) ============ */
 
 function validarRegistro(event) {
     event.preventDefault();
@@ -109,7 +108,6 @@ function validarRegistro(event) {
     let confirmar = document.getElementById("confirmar-contrasena");
     let valido = true;
 
-    // Validar nombre
     if (validarString(nombre.value, 2, 30)) {
         apuntarInput(nombre, "nombre", true);
         limpiarError("error-nombre");
@@ -119,7 +117,6 @@ function validarRegistro(event) {
         valido = false;
     }
 
-    // Validar correo
     if (validarCorreo(correo.value)) {
         apuntarInput(correo, "correo", true);
         limpiarError("error-correo");
@@ -129,7 +126,6 @@ function validarRegistro(event) {
         valido = false;
     }
 
-    // Validar usuario
     if (validarString(usuario.value, 3, 20)) {
         apuntarInput(usuario, "usuario", true);
         limpiarError("error-usuario");
@@ -139,7 +135,6 @@ function validarRegistro(event) {
         valido = false;
     }
 
-    // Validar contraseña
     if (validarContrasena(contrasena.value)) {
         apuntarInput(contrasena, "contraseña", true);
         limpiarError("error-contrasena");
@@ -149,7 +144,6 @@ function validarRegistro(event) {
         valido = false;
     }
 
-    // Validar confirmación de contraseña
     if (confirmar.value === contrasena.value && confirmar.value !== "") {
         apuntarInput(confirmar, "confirmación", true);
         limpiarError("error-confirmar");
@@ -160,14 +154,25 @@ function validarRegistro(event) {
     }
 
     if (valido) {
-        alert("Registro exitoso. Bienvenido, " + nombre.value + "!");
-        window.location.href = "/InicioSesion.html";
+        // Guardar el usuario en LocalStorage
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        let usuarioNuevo = {
+            nombre: nombre.value.trim(),
+            correo: correo.value.trim().toLowerCase(),
+            usuario: usuario.value.trim(),
+            contrasena: contrasena.value
+        };
+        usuarios.push(usuarioNuevo);
+        localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+        alert("Registro exitoso. Bienvenido, " + nombre.value + "! Ya puedes iniciar sesión.");
+        window.location.href = "InicioSesion.html";
     }
 
     return false;
 }
 
-// ---------- FORMULARIO DE LOGIN ----------
+/* ============ FORMULARIO DE LOGIN (usa LocalStorage) ============ */
 
 function validarLogin(event) {
     event.preventDefault();
@@ -194,15 +199,25 @@ function validarLogin(event) {
         valido = false;
     }
 
+    // Verificar contra los usuarios guardados en LocalStorage
     if (valido) {
-        alert("Sesión iniciada correctamente.");
-        window.location.href = "/index.html";
+        let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+        let encontrado = usuarios.find(function (u) {
+            return u.usuario === usuario.value.trim() && u.contrasena === contrasena.value;
+        });
+
+        if (encontrado) {
+            alert("Sesión iniciada correctamente. Bienvenido, " + encontrado.nombre + "!");
+            window.location.href = "index.html";
+        } else {
+            mostrarError("error-usuario", "Usuario o contraseña incorrectos. Si no tienes cuenta, regístrate.");
+        }
     }
 
     return false;
 }
 
-// ---------- FORMULARIO DE CONTACTO ----------
+/* ============ FORMULARIO DE CONTACTO ============ */
 
 function validarContacto(event) {
     event.preventDefault();
@@ -247,14 +262,14 @@ function validarContacto(event) {
     return false;
 }
 
-// ---------- CARRITO DE COMPRAS ----------
+/* ============ CARRITO (usa LocalStorage) ============ */
 
 let carrito = [];
 
 function agregarAlCarrito(nombre, precio) {
-    carrito.push({ nombre, precio });
-    alert(nombre + " agregado al carrito.");
+    carrito.push({ nombre: nombre, precio: precio });
     localStorage.setItem("carrito", JSON.stringify(carrito));
+    alert(nombre + " agregado al carrito.");
 }
 
 function mostrarCarrito() {
@@ -266,14 +281,14 @@ function mostrarCarrito() {
     carrito = data ? JSON.parse(data) : [];
 
     if (carrito.length === 0) {
-        lista.innerHTML = "<p>Tu carrito está vacío. Visita el <a href='/catalogo.html'>catálogo</a> para agregar productos.</p>";
+        lista.innerHTML = "<p>Tu carrito está vacío. Visita el <a href='catalogo.html'>catálogo</a> para agregar productos.</p>";
         if (totalElem) totalElem.textContent = "";
         return;
     }
 
     let html = "";
     let total = 0;
-    carrito.forEach((item, index) => {
+    carrito.forEach(function (item, index) {
         total += item.precio;
         html += `
             <div class="item-carrito">
